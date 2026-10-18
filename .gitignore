@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.py[cod]
+.crewai-storage/
+.DS_Store
+.env
+.env.*
+!.env.example
+archive/
+*.log
+pdf-results/
+translation-results/

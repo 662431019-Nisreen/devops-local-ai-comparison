@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Task Planner</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1 class="title">Student Task Planner</h1>
+      <button class="mode-selector" id="mode-selector">Agent Mode</button>
+    </header>
+    <main class="main">
+      <section class="task-list">
+        <h2 class="task-title">Tasks</h2>
+        <ul id="task-list"></ul>
+      </section>
+      <section class="filter">
+        <h2 class="filter-label">Filter</h2>
+        <div class="filter-input">
+          <label for="filter-input">Filter:</label>
+          <select id="filter-input" name="filter">
+            <option value="all">All</option>
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        <button id="filter-button">Apply</button>
+      </section>
+      <section class="task-count">
+        <h2 class="task-count-label">Task Count</h2>
+        <p class="task-count-value">0</p>
+      </section>
+    </main>
+    <script src="script.js"></script>
+  </div>
+
+  <script>
+    const taskList = document.getElementById('task-list');
+    const filterInput = document.getElementById('filter-input');
+    const filterButton = document.getElementById('filter-button');
+    const taskCount = document.getElementById('task-count');
+    const taskCountValue = taskCount.querySelector('.task-count-value');
+    const modeSelector = document.getElementById('mode-selector');
+
+    let tasks = localStorage.getItem('tasks') ? JSON.parse(localStorage.getItem('tasks')) : [];
+
+    function addTask(title, priority) {
+      if (title.trim() !== '') {
+        if (priority === 'high') {
+          priority = 1;
+        } else if (priority === 'medium') {
+          priority = 2;
+        } else if (priority === 'low') {
+          priority = 3;
+        }
+        tasks.push({ title, priority });
+        saveTasks();
+        renderTaskList();
+      }
+    }
+
+    function rejectTask(title) {
+      tasks = tasks.filter(task => task.title !== title);
+      saveTasks();
+      renderTaskList();
+    }
+
+    function markTaskAsCompleted(title) {
+      tasks = tasks.map(task => {
+        if (task.title === title) {
+          task.completed = true;
+        }
+        return task;
+      });
+      saveTasks();
+      renderTaskList();
+    }
+
+    function deleteTask(title) {
+      tasks = tasks.filter(task => task.title !== title);
+      saveTasks();
+      renderTaskList();
+    }
+
+    function filterTasks() {
+      const filterValue = filterInput.value;
+      tasks = tasks.filter(task => {
+        if (filterValue === 'all') {
+          return true;
+        } else if (filterValue === 'active') {
+          return task.completed === false;
+        } else if (filterValue === 'completed') {
+          return task.completed;
+        }
+        return true;
+      });
+      saveTasks();
+      renderTaskList();
+    }
+
+    function renderTaskList() {
+      taskList.innerHTML = '';
+      tasks.forEach(task => {
+        const taskElement = document.createElement('li');
+        taskElement.classList.add('task');
+        task

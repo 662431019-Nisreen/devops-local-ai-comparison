@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Student Task Planner</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* =========================
+           GLOBAL STYLE
+        ========================= */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #2b2b2b;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* =========================
+           CONTAINER
+        ========================= */
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #333;
+            border: 1px solid #444;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: #4b4b4b;
+            border-bottom: 1px solid #444;
+            border-radius: 5px;
+            gap: 10px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        /* =========================
+           MODE SELECTOR
+        ========================= */
+
+        .mode-selector {
+            padding: 10px 15px;
+            background-color: #555;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .mode-selector:hover {
+            background-color: #666;
+        }
+
+        .mode-selector.agent-mode {
+            background-color: #2196f3;
+        }
+
+        /* =========================
+           MAIN
+        ========================= */
+
+        .main {
+            padding: 20px;
+        }
+
+        /* =========================
+           ADD TASK
+        ========================= */
+
+        .add-task {
+            margin-bottom: 30px;
+        }
+
+        #task-form {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        #task-input {
+            flex: 1;
+            min-width: 180px;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #priority-input {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #task-form button {
+            padding: 10px 15px;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #task-form button:hover {
+            background-color: #1976d2;
+        }
+
+        /* =========================
+           TASK LIST
+        ========================= */
+
+        #task-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .task {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: #444;
+            border-radius: 5px;
+        }
+
+        .task-title {
+            font-size: 18px;
+            font-weight: bold;
+            overflow-wrap: anywhere;
+        }
+
+        .task-priority {
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        .task.completed .task-title {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        /* =========================
+           TASK BUTTONS
+        ========================= */
+
+        .mark-as-completed,
+        .delete-task {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .mark-as-completed {
+            background-color: #4caf50;
+            color: #fff;
+        }
+
+        .mark-as-completed:hover {
+            background-color: #388e3c;
+        }
+
+        .mark-as-completed:disabled {
+            background-color: #666;
+            cursor: default;
+        }
+
+        .delete-task {
+            background-color: #f44336;
+            color: #fff;
+        }
+
+        .delete-task:hover {
+            background-color: #d32f2f;
+        }
+
+        /* =========================
+           FILTER
+        ========================= */
+
+        .filter {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #3b3b3b;
+            border-radius: 5px;
+        }
+
+        .filter-input {
+            margin-bottom: 15px;
+        }
+
+        #filter-input {
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #filter-button {
+            padding: 10px 20px;
+            background-color: #2196f3;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #filter-button:hover {
+            background-color: #1976d2;
+        }
+
+        /* =========================
+           TASK COUNT
+        ========================= */
+
+        .task-count {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #4b4b4b;
+            border-bottom: 1px solid #444;
+            border-radius: 5px;
+        }
+
+        .task-count-value {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (max-width: 600px) {
+            .header {
+                flex-direction: column;
+            }
+
+            .title {
+                font-size: 20px;
+            }
+
+            .main {
+                padding: 10px;
+            }
+
+            #task-form {
+                flex-direction: column;
+            }
+
+            .task {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- HEADER -->
+        <header class="header">
+
+            <h1 class="title">
+                Student Task Planner
+            </h1>
+
+            <button class="mode-selector" id="mode-selector">
+                Agent Mode
+            </button>
+
+        </header>
+
+        <!-- MAIN -->
+        <main class="main">
+
+            <!-- ADD TASK -->
+            <section class="add-task">
+
+                <h2>Add Task</h2>
+
+                <form id="task-form">
+
+                    <input
+                        type="text"
+                        id="task-input"
+                        placeholder="Enter your task"
+                        required
+                    >
+
+                    <select id="priority-input">
+                        <option value="high">High Priority</option>
+                        <option value="medium">Medium Priority</option>
+                        <option value="low">Low Priority</option>
+                    </select>
+
+                    <button type="submit">
+                        Add Task
+                    </button>
+
+                </form>
+
+            </section>
+
+            <!-- TASK LIST -->
+            <section class="task-list">
+
+                <h2>Tasks</h2>
+
+                <ul id="task-list"></ul>
+
+            </section>
+
+            <!-- FILTER -->
+            <section class="filter">
+
+                <h2 class="filter-label">
+                    Filter
+                </h2>
+
+                <div class="filter-input">
+
+                    <label for="filter-input">
+                        Filter:
+                    </label>
+
+                    <select id="filter-input" name="filter">
+                        <option value="all">All</option>
+                        <option value="active">Active</option>
+                        <option value="completed">Completed</option>
+                    </select>
+
+                </div>
+
+                <button id="filter-button">
+                    Apply
+                </button>
+
+            </section>
+
+            <!-- TASK COUNT -->
+            <section class="task-count">
+
+                <h2 class="task-count-label">
+                    Task Count
+                </h2>
+
+                <p class="task-count-value">
+                    0
+                </p>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <!-- =========================
+         JAVASCRIPT
+    ========================= -->
+
+    <script>
+
+        // =========================
+        // ELEMENTS
+        // =========================
+
+        const taskList = document.getElementById('task-list');
+
+        const taskForm = document.getElementById('task-form');
+        const taskInput = document.getElementById('task-input');
+        const priorityInput = document.getElementById('priority-input');
+
+        const filterInput = document.getElementById('filter-input');
+        const filterButton = document.getElementById('filter-button');
+
+        const taskCountValue = document.querySelector('.task-count-value');
+
+        const modeSelector = document.getElementById('mode-selector');
+
+
+        // =========================
+        // TASK DATA
+        // =========================
+
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+        // รองรับข้อมูลเก่าที่อาจไม่มี ID หรือ completed
+        tasks = tasks.map(task => ({
+            ...task,
+            id: task.id ?? crypto.randomUUID(),
+            completed: Boolean(task.completed)
+        }));
+
+        let currentFilter = 'all';
+
+        saveTasks();
+
+
+        // =========================
+        // ADD TASK
+        // =========================
+
+        function addTask(title, priority) {
+
+            if (title.trim() === '') {
+                return;
+            }
+
+            const newTask = {
+                id: crypto.randomUUID(),
+                title: title.trim(),
+                priority: priority,
+                completed: false
+            };
+
+            tasks.push(newTask);
+
+            saveTasks();
+            renderTaskList();
+        }
+
+
+        // =========================
+        // DELETE TASK
+        // =========================
+
+        function deleteTask(id) {
+
+            tasks = tasks.filter(task => task.id !== id);
+
+            saveTasks();
+            renderTaskList();
+        }
+
+
+        // =========================
+        // REJECT TASK
+        // =========================
+
+        function rejectTask(id) {
+            deleteTask(id);
+        }
+
+
+        // =========================
+        // MARK TASK COMPLETED
+        // =========================
+
+        function markTaskAsCompleted(id) {
+
+            tasks = tasks.map(task => {
+
+                if (task.id === id) {
+                    return {
+                        ...task,
+                        completed: true
+                    };
+                }
+
+                return task;
+
+            });
+
+            saveTasks();
+            renderTaskList();
+        }
+
+
+        // =========================
+        // FILTER TASKS
+        // =========================
+
+        function filterTasks() {
+
+            currentFilter = filterInput.value;
+
+            renderTaskList();
+        }
+
+
+        // =========================
+        // RENDER TASK LIST
+        // =========================
+
+        function renderTaskList() {
+
+            taskList.innerHTML = '';
+
+            let filteredTasks = tasks;
+
+            if (currentFilter === 'active') {
+
+                filteredTasks = tasks.filter(
+                    task => !task.completed
+                );
+
+            } else if (currentFilter === 'completed') {
+
+                filteredTasks = tasks.filter(
+                    task => task.completed
+                );
+
+            }
+
+            filteredTasks.forEach(task => {
+
+                const taskElement = document.createElement('li');
+
+                taskElement.classList.add('task');
+
+                if (task.completed) {
+                    taskElement.classList.add('completed');
+                }
+
+                // TASK TITLE
+                const titleElement = document.createElement('span');
+
+                titleElement.className = 'task-title';
+                titleElement.textContent = task.title;
+
+                // TASK PRIORITY
+                const priorityElement = document.createElement('span');
+
+                priorityElement.className = 'task-priority';
+                priorityElement.textContent = task.priority;
+
+                // COMPLETE BUTTON
+                const completeButton = document.createElement('button');
+
+                completeButton.className = 'mark-as-completed';
+
+                completeButton.textContent = task.completed
+                    ? 'Completed'
+                    : 'Mark as Completed';
+
+                completeButton.disabled = task.completed;
+
+                completeButton.addEventListener('click', () => {
+                    markTaskAsCompleted(task.id);
+                });
+
+                // DELETE BUTTON
+                const deleteButton = document.createElement('button');
+
+                deleteButton.className = 'delete-task';
+                deleteButton.textContent = 'Delete';
+
+                deleteButton.addEventListener('click', () => {
+                    deleteTask(task.id);
+                });
+
+                // APPEND ELEMENTS
+                taskElement.appendChild(titleElement);
+                taskElement.appendChild(priorityElement);
+                taskElement.appendChild(completeButton);
+                taskElement.appendChild(deleteButton);
+
+                taskList.appendChild(taskElement);
+
+            });
+
+            renderTaskCount();
+        }
+
+
+        // =========================
+        // TASK COUNT
+        // =========================
+
+        function renderTaskCount() {
+
+            taskCountValue.textContent = tasks.length;
+        }
+
+
+        // =========================
+        // SAVE TASKS
+        // =========================
+
+        function saveTasks() {
+
+            localStorage.setItem(
+                'tasks',
+                JSON.stringify(tasks)
+            );
+        }
+
+
+        // =========================
+        // ADD TASK EVENT
+        // =========================
+
+        taskForm.addEventListener('submit', function(event) {
+
+            event.preventDefault();
+
+            const title = taskInput.value;
+            const priority = priorityInput.value;
+
+            addTask(title, priority);
+
+            taskInput.value = '';
+
+            taskInput.focus();
+        });
+
+
+        // =========================
+        // FILTER EVENT
+        // =========================
+
+        filterButton.addEventListener('click', filterTasks);
+
+
+        // =========================
+        // AGENT MODE
+        // =========================
+
+        modeSelector.addEventListener('click', function() {
+
+            modeSelector.classList.toggle('agent-mode');
+
+            if (modeSelector.classList.contains('agent-mode')) {
+
+                modeSelector.textContent = 'Agent Mode ON';
+
+            } else {
+
+                modeSelector.textContent = 'Agent Mode';
+
+            }
+
+        });
+
+
+        // =========================
+        // INITIAL RENDER
+        // =========================
+
+        renderTaskList();
+
+    </script>
+
+</body>
+</html>
