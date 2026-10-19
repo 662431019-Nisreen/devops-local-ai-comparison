@@ -1,0 +1,39 @@
+{
+  "health": {
+    "status": "ready",
+    "ollama_url": "http://ollama:11434",
+    "models": [
+      "llama3.2:1b",
+      "qwen2.5-coder:1.5b"
+    ]
+  },
+  "host_disconnected": false,
+  "tests": [
+    {
+      "requested_model": "qwen",
+      "prompt": "Write a complete small HTML document displaying \"Local agent test NISREEN-01\". Return only HTML.",
+      "wall_seconds": 32.5,
+      "result": {
+        "model": "qwen2.5-coder:1.5b",
+        "engine": "crewai",
+        "agent_count": 1,
+        "task_count": 1,
+        "seconds": 32.46,
+        "response": "```html\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Local Agent Test NISREEN-01</title>\n</head>\n<body>\n    <h1>Local Agent Test NISREEN-01</h1>\n</body>\n</html>\n```"
+      }
+    },
+    {
+      "requested_model": "llama",
+      "prompt": "Write a complete small HTML document displaying \"Local agent test NISREEN-01\". Return only HTML.",
+      "wall_seconds": 33.37,
+      "result": {
+        "model": "llama3.2:1b",
+        "engine": "crewai",
+        "agent_count": 1,
+        "task_count": 1,
+        "seconds": 33.3,
+        "response": "<!DOCTYPE html>\n<html>\n<head>\n\t<title>Local agent test NISREEN-01</title>\n</head>\n<body>\n\t<h1>Local agent test NISREEN-01</h1>\n</body>\n</html>"
+      }
+    }
+  ]
+}

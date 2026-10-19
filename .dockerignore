@@ -1,0 +1,12 @@
+*
+!Dockerfile
+!requirements.txt
+!requirements-docker.txt
+!crewai_helper.py
+!chat_input.py
+!translate_text.py
+!read_pdf.py
+!app.py
+!plan_tasks.py
+!review_python.py
+!agent_server.py

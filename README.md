@@ -4,6 +4,51 @@ A DevOps course project that deploys a local language-model service in Docker, r
 
 **The current implementation uses one selected model per request. Qwen and Llama do not review, rewrite, or receive each other's answers.**
 
+## Verified current evidence
+
+The current repository state was validated with a live smoke test.
+
+```bash
+source .venv/bin/activate
+docker compose up -d
+python scripts/check_stack.py
+```
+
+Observed live results:
+
+```text
+qwen qwen2.5-coder:1.5b 32.46
+llama llama3.2:1b 33.3
+```
+
+This confirms that the Docker stack started successfully and the agent service responded for both models. The recorded evidence file is:
+
+- `evidence/container-agent-test.json`
+
+The evidence captures the live `/health` check and two independent single-model requests, each with `engine: crewai`, `agent_count: 1`, and `task_count: 1`.
+
+## Containerized assessment deployment
+
+The project includes a containerized CrewAI entry point in addition to the original host Python programs. This is the route for demonstrating external access to the **Docker agent** rather than only to Ollama.
+
+```bash
+docker compose build agent
+docker compose up -d
+# Browser: http://127.0.0.1:8080
+python scripts/check_stack.py
+```
+
+The original standalone `ollama` container may need migration before Compose can create its service. Preserve the named `ollama` volume. The migration and container test status are documented separately; do not assume a new deployment passed because configuration files exist.
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [Rubric checklist and interpretation limits](docs/RUBRIC.md)
+- [Demonstration and offline procedure](docs/DEMO.md)
+- [Continue configuration for the containerized agents](config/continue-agent.example.yaml)
+
+For the Docker agent route, each request still selects **one model only**, with one CrewAI agent and task. The web interface and `/chat` API do not use the host chat program's calculator or clock shortcuts. The active Continue configuration targets the Docker Agent route at `http://127.0.0.1:8080/v1`; direct-to-Ollama usage remains a separate diagnostic option for comparison.
+
+An optional `compose.offline.yaml` makes the runtime network internal after images and models are installed. A complete host-disconnected demonstration still requires the student's recorded test.
+
 ## 1. Project Objectives
 
 - Run a local AI inference service using Docker and Ollama.
@@ -65,7 +110,7 @@ Qwen OR Llama, independently
 Terminal response / saved output
 ```
 
-Ollama runs inside Docker. Python, CrewAI, pypdf, and the task programs run on macOS in the project's virtual environment.
+In the original host workflow, Ollama runs inside Docker and Python/CrewAI run on macOS. In the current assessment deployment, the agent service also runs CrewAI and Python inside Docker, connected to the Ollama service. Both routes are available.
 
 ### Continue integration
 
@@ -73,13 +118,19 @@ Ollama runs inside Docker. Python, CrewAI, pypdf, and the task programs run on m
 Continue Chat in VS Code
           |
           v
-Selected Ollama model at 127.0.0.1:11434
+Docker Agent endpoint at http://127.0.0.1:8080/v1
+          |
+          v
+CrewAI agent in Docker
+          |
+          v
+Ollama service
           |
           v
 Qwen OR Llama
 ```
 
-The current Continue configuration connects directly to Ollama. It does **not** route through the Python CrewAI programs. These are two separate interfaces for testing local models.
+The active Continue configuration targets the containerized Docker Agent route. It does not use the direct host-to-Ollama flow as the default route. The direct-to-Ollama interface remains available as a diagnostic option for comparison.
 
 Chat and translation also provide an explicit `--engine direct` option for diagnostic comparisons with Ollama, bypassing CrewAI. Their default engine is `crewai`.
 
@@ -87,31 +138,36 @@ Chat and translation also provide an explicit `--engine direct` option for diagn
 
 ```text
 devops-final/
+├── compose.yaml            # Ollama service, local port, and persistent model volume
+├── compose.offline.yaml    # Optional offline network override for disconnected demo
+├── Dockerfile              # Docker image for the local agent service
 ├── app.py                  # Generate HTML using one selected model
+├── agent_server.py         # HTTP web and API layer for Docker agent requests
 ├── chat_input.py           # Interactive chat and labeled local utilities
 ├── crewai_helper.py        # Shared single-model CrewAI execution and PDF helper
 ├── translate_text.py       # Translation with CrewAI or direct Ollama
 ├── read_pdf.py             # Questions and summaries from selected PDF pages
-├── plan_tasks.py           # Generate a five-step plan
-├── review_python.py        # Review code as text; does not execute submitted code
 ├── requirements.txt        # Pinned core CrewAI dependency
-├── README.md
-├── result/                 # Generated HTML and saved responses
-├── pdf-results/            # PDF output, including historical experiments
-├── translation-results/    # Created when translations are saved
-├── qwen.html               # Student Task Planner, initial saved attempt
-├── qwen2.html              # Student Task Planner, later saved attempt
-├── Llama.html              # Student Task Planner, initial saved attempt
-├── Llama2.html             # Student Task Planner, later assembled/saved output
-├── archive/                # Previous implementations, backups, and legacy results
+├── requirements-docker.txt # Docker image dependency file
+├── README.md               # Project overview and usage notes
+├── scripts/
+│   └── check_stack.py     # Live API and agent validation script
+├── config/
+│   └── continue-agent.example.yaml  # Continue config for Docker Agent route
+├── docs/
+│   ├── ARCHITECTURE.md
+│   ├── DEMO.md
+│   ├── RUBRIC.md
+│   └── FINAL_CHECKLIST.md
+├── evidence/
+│   └── container-agent-test.json  # Verified system evidence from live tests
+├── archive/                # Historical backups and older experimental outputs
+├── .gitignore              # Ignore generated files and local artifacts
 ├── .venv/                  # Local Python environment; not source code
-├── .crewai-storage/         # Runtime storage used by CrewAI
-└── __pycache__/             # Generated Python cache
+└── .crewai-storage/       # Runtime storage used by CrewAI (generated)
 ```
 
-The API/MCP bridge from an earlier experiment is archived and is not required by the current Continue setup. Legacy results may describe a previous two-model workflow and should not be presented as evidence of the current independent-model workflow.
-
-Some output directories are created only after the corresponding program is run. Preserve existing results before repeating tests that write the same output filenames.
+The repository has been cleaned to keep the active implementation visible while moving historical experiments to `archive/`. Some output directories are created only after the corresponding program is run. Preserve existing results before repeating tests that write the same output filenames.
 
 ## 6. Installation
 
@@ -133,41 +189,61 @@ The current `requirements.txt` pins the core dependency to `crewai[litellm]==1.1
 
 For the existing installation, activate `.venv` instead of recreating it.
 
-### 6.2 Start Ollama in Docker
+### 6.2 Start Ollama with Docker Compose
 
-Open Docker Desktop and wait for its engine to become ready.
+Open Docker Desktop and wait for its engine to become ready. The included `compose.yaml` defines only Ollama; Python and CrewAI continue to run in `.venv` on macOS.
 
-On a new setup, create the container once:
+The service binds port 11434 to loopback, persists models in the named volume `ollama`, and limits Ollama to one loaded model and one parallel inference request. Selecting either model does not cause it to receive the other model's response.
+
+On a fresh setup, run from the project folder:
 
 ```bash
-docker run -d \
-  -v ollama:/root/.ollama \
-  -p 127.0.0.1:11434:11434 \
-  --name ollama \
-  ollama/ollama
+docker compose config --quiet
+docker compose up -d
+docker compose ps
 ```
 
-The named volume stores downloaded models independently of the container's writable layer. The host port is bound to loopback for local use.
+The image uses the `latest` tag; it is not pinned to an immutable digest. Model downloads and the initial image download require internet access.
 
-If the `ollama` container already exists, start it instead:
+#### Existing setup created with docker run
+
+This project originally created a standalone container named `ollama`. It cannot coexist with the Compose service using the same container name and port. To switch the existing installation to Compose, first finish any active inference request, then run this one-time migration:
 
 ```bash
-docker start ollama
+docker stop ollama
+docker rm ollama
+docker compose up -d
 ```
 
-Download the two models once:
+These commands replace the container, not the named volume. The inspected existing setup stores its models in volume `ollama`, and the Compose file explicitly uses that same name. Do not remove the volume or run `docker compose down -v` if you need to retain the downloaded models.
+
+Migration is optional until you are ready to switch. If you have not migrated, continue starting the original container with `docker start ollama` instead of running Compose against it.
+
+#### Models and verification
+
+On a fresh installation, download the models once:
 
 ```bash
-docker exec -it ollama ollama pull qwen2.5-coder:1.5b
-docker exec -it ollama ollama pull llama3.2:1b
+docker compose exec ollama ollama pull qwen2.5-coder:1.5b
+docker compose exec ollama ollama pull llama3.2:1b
 ```
 
-Verify the container and installed models:
+For the existing installation, verify the models before downloading again:
 
 ```bash
-docker ps
 docker exec ollama ollama list
 ```
+
+After migration, routine Compose commands are:
+
+```bash
+docker compose up -d
+docker compose ps
+docker compose logs --tail 50 ollama
+docker compose stop
+```
+
+`docker compose stop` stops the service while preserving its container and model volume.
 
 ## 7. Running the Programs
 

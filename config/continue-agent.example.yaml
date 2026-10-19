@@ -1,0 +1,26 @@
+name: Independent Docker Agents
+version: 1.0.0
+schema: v1
+models:
+  - name: Qwen - Docker CrewAI Agent
+    provider: openai
+    model: qwen
+    apiBase: http://127.0.0.1:8080/v1
+    apiKey: local-only
+    roles: [chat]
+    requestOptions:
+      timeout: 900000
+    defaultCompletionOptions:
+      contextLength: 4096
+      maxTokens: 1500
+  - name: Llama - Docker CrewAI Agent
+    provider: openai
+    model: llama
+    apiBase: http://127.0.0.1:8080/v1
+    apiKey: local-only
+    roles: [chat]
+    requestOptions:
+      timeout: 900000
+    defaultCompletionOptions:
+      contextLength: 4096
+      maxTokens: 1500

@@ -1,0 +1,5 @@
+# Use with: docker compose -f compose.yaml -f compose.offline.yaml up -d --no-build --pull never
+# Images and models must already exist. This changes runtime networking only.
+networks:
+  default:
+    internal: true

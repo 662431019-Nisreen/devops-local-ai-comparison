@@ -6,11 +6,11 @@ from pathlib import Path
 import shutil
 from urllib.request import Request, urlopen
 
-os.environ['CREWAI_STORAGE_DIR'] = str(Path(__file__).resolve().parent / '.crewai-storage')
+os.environ.setdefault('CREWAI_STORAGE_DIR', str(Path(__file__).resolve().parent / '.crewai-storage'))
 os.environ['OTEL_SDK_DISABLED'] = 'true'
 os.environ['CREWAI_TRACING_ENABLED'] = 'false'
 MODELS = {'qwen': 'qwen2.5-coder:1.5b', 'llama': 'llama3.2:1b'}
-BASE_URL = 'http://127.0.0.1:11434'
+BASE_URL = os.environ.get('OLLAMA_BASE_URL', 'http://127.0.0.1:11434')
 ROOT = Path(__file__).resolve().parent
 
 
